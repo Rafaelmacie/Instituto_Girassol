@@ -1,0 +1,201 @@
+CREATE TABLE "RespostaQuestao" (
+  "id_resposta_questao" int,
+  "eh_correta" boolean,
+  "id_tentativa" int,
+  "id_questao" int,
+  "id_opcao" int,
+  PRIMARY KEY ("id_resposta_questao")
+);
+
+CREATE TABLE "Aluno" (
+  "id_usuario" int,
+  PRIMARY KEY ("id_usuario")
+);
+
+CREATE TABLE "Curso" (
+  "id_curso" int,
+  "titulo" varchar(200),
+  "descricao" text,
+  "id_professor" int,
+  "id_area" int,
+  "cargaHoraria" time,
+  "imagem" varchar(255),
+  "disciplina" varchar(100),
+  "disponivel" boolean,
+  "qtdAulas" int,
+  PRIMARY KEY ("id_curso")
+);
+
+CREATE TABLE "Avaliação" (
+  "id_avaliacao" int,
+  "nota_minima" int,
+  "numero_questoes" int,
+  "id_modulo" int,
+  PRIMARY KEY ("id_avaliacao"),
+  CONSTRAINT "FK_Avaliação_nota_minima"
+    FOREIGN KEY ("nota_minima")
+      REFERENCES "Curso"("qtdAulas")
+);
+
+CREATE TABLE "Questao" (
+  "id_questao" int,
+  "comando" text,
+  "tipoQuestao" enum('Unica_Escolha', 'Multipla_Escolha),
+  "id_avaliacao" int,
+  PRIMARY KEY ("id_questao"),
+  CONSTRAINT "FK_Questao_id_avaliacao"
+    FOREIGN KEY ("id_avaliacao")
+      REFERENCES "Avaliação"("nota_minima")
+);
+
+CREATE TABLE "Aula" (
+  "id_aula" int,
+  "titulo" varchar(200),
+  "descricao" text,
+  "minutos" time,
+  "id_modulo" int,
+  PRIMARY KEY ("id_aula")
+);
+
+CREATE TABLE "Usuário" (
+  "id_usuario" int,
+  "nome" varchar(100),
+  "email" varchar(150),
+  "senha" varchar(255),
+  "tipoUsuario" enum('Administrador', 'Professor', 'Aluno' ),
+  "passe" boolean,
+  "ultimoNome" varchar(100),
+  PRIMARY KEY ("id_usuario")
+);
+
+CREATE INDEX "UNIQUE" ON  "Usuário" ("email");
+
+CREATE TABLE "Comentario" (
+  "id_comentario" int,
+  "texto" text,
+  "id_aula" int,
+  "id_aluno" int,
+  PRIMARY KEY ("id_comentario"),
+  CONSTRAINT "FK_Comentario_id_aluno"
+    FOREIGN KEY ("id_aluno")
+      REFERENCES "Aula"("id_aula")
+);
+
+CREATE TABLE "RespostaComentario" (
+  "id_resposta" int,
+  "texto" text,
+  "id_professor" int,
+  "id_comentario" int,
+  PRIMARY KEY ("id_resposta"),
+  CONSTRAINT "FK_RespostaComentario_texto"
+    FOREIGN KEY ("texto")
+      REFERENCES "Comentario"("id_aluno")
+);
+
+CREATE TABLE "Usuário Certificável" (
+  "id_usuario" int,
+  "cpf" varchar(14),
+  "foto" varchar(255),
+  PRIMARY KEY ("id_usuario")
+);
+
+CREATE TABLE "Professor" (
+  "id_usuario" int,
+  "curriculo" text,
+  "telefone" varchar(20),
+  PRIMARY KEY ("id_usuario")
+);
+
+CREATE TABLE "Modulo" (
+  "id_modulo" int,
+  "nome" varchar(150),
+  "id_curso" int,
+  PRIMARY KEY ("id_modulo")
+);
+
+CREATE TABLE "Administrador" (
+  "id_usuario" int,
+  "Instagram" varchar(100),
+  PRIMARY KEY ("id_usuario")
+);
+
+CREATE TABLE "ProgressoAula" (
+  "id_progresso" int,
+  "assistida" bool,
+  "id_matricula" int,
+  "id_aula" int,
+  "minutosAssistidos" time,
+  PRIMARY KEY ("id_progresso"),
+  CONSTRAINT "FK_ProgressoAula_assistida"
+    FOREIGN KEY ("assistida")
+      REFERENCES "Aula"("titulo")
+);
+
+CREATE INDEX "Chave" ON  "ProgressoAula" ("minutosAssistidos");
+
+CREATE TABLE "Area" (
+  "id_area" int,
+  "nome" varchar(100),
+  PRIMARY KEY ("id_area")
+);
+
+CREATE TABLE "Opcao" (
+  "id_opcao" int,
+  "texto" text,
+  "correta" boolean,
+  "id_questao" int,
+  PRIMARY KEY ("id_opcao")
+);
+
+CREATE TABLE "Certificado" (
+  "id_certificado " int,
+  "codigo" varchar(50),
+  "data" date,
+  "tipo_certificado" enum('Docência', 'Conclusão' ),
+  "id_matricula" int,
+  PRIMARY KEY ("id_certificado ")
+);
+
+CREATE INDEX "UNIQUE" ON  "Certificado" ("codigo");
+
+CREATE TABLE "Matricula" (
+  "id_matricula" int,
+  "data" date,
+  "statusMatricula" enum('Cancelada', 'Em_andamento', 'Concluida' ),
+  "id_aluno" int,
+  "id_curso" int,
+  "Favoritada" Tipo,
+  "aulaAssistidas" int,
+  PRIMARY KEY ("id_matricula"),
+  CONSTRAINT "FK_Matricula_statusMatricula"
+    FOREIGN KEY ("statusMatricula")
+      REFERENCES "Curso"("id_area")
+);
+
+CREATE INDEX "Chave" ON  "Matricula" ("Favoritada");
+
+CREATE TABLE "TentativaAvaliacao" (
+  "id_tentativa" int,
+  "data_hora" date,
+  "nota_adquirida" float,
+  "id_matricula" int,
+  "id_avaliacao" int,
+  PRIMARY KEY ("id_tentativa"),
+  CONSTRAINT "FK_TentativaAvaliacao_nota_adquirida"
+    FOREIGN KEY ("nota_adquirida")
+      REFERENCES "Matricula"("statusMatricula")
+);
+
+CREATE TABLE "Material" (
+  "id_material" int,
+  "tipo_material" enum('PDF', 'Zip', 'Link', 'xlsx', 'Csv'),
+  "titulo" varchar(100),
+  "descricao" text,
+  "url" varchar(255),
+  "id_aula" int,
+  PRIMARY KEY ("id_material"),
+  CONSTRAINT "FK_Material_titulo"
+    FOREIGN KEY ("titulo")
+      REFERENCES "Aula"("titulo")
+);
+
