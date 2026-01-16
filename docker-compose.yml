@@ -1,0 +1,48 @@
+services:
+  # Serviço do Banco
+  db:
+    image: postgres:15-alpine
+    container_name: girassol_db
+    restart: always
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    # O Banco lê as variáveis diretamente do arquivo na raiz
+    env_file:
+      - ./.env
+
+  # Serviço do Backend
+  backend:
+    build: ./backend
+    container_name: girassol_backend
+    restart: always
+    ports:
+      - "${PORT}:3000"
+    depends_on:
+      - db
+    # Carregamos primeiro as variáveis gerais (raiz)
+    # Depois as específicas do backend
+    env_file:
+      - ./.env
+      - ./backend/.env 
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Serviço do Frontend
+  frontend:
+    build: ./frontend
+    container_name: girassol_frontend
+    restart: always
+    ports:
+      - "${FRONTEND_PORT}:5173"
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:
