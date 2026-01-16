@@ -48,7 +48,6 @@ class Database {
 
     /**
      * Obtém um cliente para Transações (BEGIN/COMMIT).
-     * Lembre-se de usar client.release() depois!
      */
     public async getClient(): Promise<PoolClient> {
         const client = await this.pool.connect();
