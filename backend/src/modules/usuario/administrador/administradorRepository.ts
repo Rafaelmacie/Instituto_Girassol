@@ -23,7 +23,7 @@ export class AdministradorRepository {
                 admin.nome,
                 admin.ultimoNome,
                 admin.email,
-                admin.senha, // TODO: Em produção, lembre-se de hashear a senha antes (bcrypt)
+                admin.senha,
                 TipoUsuario.ADMINISTRADOR,
                 admin.passe
             ];

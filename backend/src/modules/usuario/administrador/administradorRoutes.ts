@@ -3,10 +3,10 @@ import administradorController from './administradorController';
 
 const router = Router();
 
-// POST /api/administradores -> Cria
+// POST http/localhost:3000/administradores/ -> Cria
 router.post('/', administradorController.criar);
 
-// PUT /api/administradores/:id -> Edita
+// PUT http/localhost:3000/administradores/:id -> Edita
 router.put('/:id', administradorController.atualizar);
 
 export default router;
