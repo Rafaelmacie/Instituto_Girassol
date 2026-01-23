@@ -1,6 +1,6 @@
 import { UsuarioCertificavel } from "../usuarioCertificavel";
 import { TipoUsuario } from "../../../../shared/constants/tipoUsuario";
-export class Professor extends UsuarioCertificavel {
+export class ProfessorModel extends UsuarioCertificavel {
     constructor(
         idUsuario: number,
         nome: string,

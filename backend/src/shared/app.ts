@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import administradorRoutes from '../modules/usuario/administrador/administradorRoutes'
+import { professorRoutes } from '../modules/usuario/usuarioCertificavel/professor/professorRoutes'; // Importe a rota
 
 // Importando APENAS as interfaces/tipos explicitamente
 import type { Application, Request, Response } from 'express';
@@ -18,5 +19,7 @@ app.use('/administradores', administradorRoutes);
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API rodando com sucesso!' });
 });
+
+app.use('/professores', professorRoutes);
 
 export { app };
