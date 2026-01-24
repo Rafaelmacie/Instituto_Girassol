@@ -1,10 +1,11 @@
 import administradorRepository from './administradorRepository';
 import { Administrador } from './administradorModel';
+import { hashSenha } from '../../../shared/utils/senhaUtils';
 
 export class AdministradorService {
 
     async criar(dados: any): Promise<Administrador> {
-        // Aqui poderíamos validar se o email já existe, validar força da senha, etc.
+        const senhaCriptografada = await hashSenha(dados.senha);
         
         // Instancia o Model (padronizando os dados)
         const novoAdmin = new Administrador(
