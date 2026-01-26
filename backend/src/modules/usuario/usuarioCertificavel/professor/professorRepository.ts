@@ -39,8 +39,24 @@ export class ProfessorRepository {
             await client.query(professorQuery, [idUsuario, professor.curriculo, professor.telefone]);
 
             await client.query('COMMIT'); // Salva tudo
-        } catch (error) {
+        } catch (error: any) {
             await client.query('ROLLBACK'); // Desfaz tudo se der erro
+            // --- TRATAMENTO DE ERRO PERSONALIZADO ---
+            
+            // O código '23505' é o código padrão do PostgreSQL para "Unique Violation"
+            if (error.code === '23505') {
+                // Verifica qual campo duplicou
+                if (error.constraint === 'Usuario_email_key') {
+                    throw new Error("Professor já existe (Email já utilizado).");
+                }
+                if (error.constraint === 'UsuarioCertificavel_cpf_key') {
+                    throw new Error("Professor já existe (CPF já utilizado).");
+                }
+                // Fallback genérico caso seja outra chave
+                throw new Error("Professor já existe.");
+            }
+            
+            // Se for outro erro (ex: banco fora do ar), repassa o erro original
             throw error;
         } finally {
             client.release(); // Libera a conexão de volta para o Pool
@@ -94,21 +110,51 @@ export class ProfessorRepository {
     }
 
     async update(id: number, dados: any): Promise<void> {
-        // CORREÇÃO AQUI: Usamos getClient() para ter transação segura
+        
         const client = await db.getClient();
         try {
             await client.query('BEGIN');
 
-            if (dados.nome || dados.email) {
+            const checkQuery = `SELECT id_usuario FROM "Professor" WHERE id_usuario = $1`;
+            const checkResult = await client.query(checkQuery, [id]);
+
+            if (checkResult.rowCount === 0) {
+                throw new Error("Este usuário não foi cadastrado ou não é um professor.");
+            }
+
+            // 2. Atualiza tabela PAI ("Usuario")
+            // Incluído: ultimoNome e passe
+            if (dados.nome || dados.email || dados.ultimoNome || dados.passe !== undefined) {
                 await client.query(
-                    `UPDATE "Usuario" SET nome = COALESCE($1, nome), email = COALESCE($2, email) WHERE id_usuario = $3`,
-                    [dados.nome, dados.email, id]
+                    `UPDATE "Usuario" SET 
+                        nome = COALESCE($1, nome), 
+                        email = COALESCE($2, email),
+                        "ultimoNome" = COALESCE($3, "ultimoNome"),
+                        passe = COALESCE($4, passe)
+                     WHERE id_usuario = $5`,
+                    [dados.nome, dados.email, dados.ultimoNome, dados.passe, id]
                 );
             }
 
+            // 3. Atualiza tabela INTERMEDIÁRIA ("UsuarioCertificavel") - NOVO
+            // Incluído: cpf e foto
+            if (dados.cpf || dados.foto) {
+                await client.query(
+                    `UPDATE "UsuarioCertificavel" SET 
+                        cpf = COALESCE($1, cpf), 
+                        foto = COALESCE($2, foto) 
+                     WHERE id_usuario = $3`,
+                    [dados.cpf, dados.foto, id]
+                );
+            }
+
+            // 4. Atualiza tabela FILHA ("Professor")
             if (dados.curriculo || dados.telefone) {
                 await client.query(
-                    `UPDATE "Professor" SET curriculo = COALESCE($1, curriculo), telefone = COALESCE($2, telefone) WHERE id_usuario = $3`,
+                    `UPDATE "Professor" SET 
+                        curriculo = COALESCE($1, curriculo), 
+                        telefone = COALESCE($2, telefone) 
+                     WHERE id_usuario = $3`,
                     [dados.curriculo, dados.telefone, id]
                 );
             }
@@ -116,13 +162,20 @@ export class ProfessorRepository {
             await client.query('COMMIT');
         } catch (error) {
             await client.query('ROLLBACK');
-            throw error;
+            throw error; // Se o CPF novo já existir no banco, o erro de "Unique Constraint" estoura aqui
         } finally {
             client.release();
         }
     }
 
     async delete(id: number): Promise<void> {
-        await db.query(`DELETE FROM "Usuario" WHERE id_usuario = $1`, [id]);
+
+        // Tenta deletar da tabela PAI (Usuario). O CASCADE apaga o resto.
+        const result = await db.query(`DELETE FROM "Usuario" WHERE id_usuario = $1`, [id]);
+
+        // Se rowCount for 0, ninguém foi deletado.
+        if (result.rowCount === 0) {
+            throw new Error("Usuário não existe ou já foi excluído.");
+        }
     }
 }
