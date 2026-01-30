@@ -61,7 +61,7 @@ CREATE TABLE "Curso" (
   "titulo" varchar(200) NOT NULL,
   "descricao" text,
   "id_professor" int NOT NULL,
-  "id_area" int NOT NULL,
+  "id_area" int,
   "cargaHoraria" int, -- Em minutos, para facilitar cálculos
   "imagem" varchar(255),
   "disciplina" varchar(100),

@@ -23,9 +23,19 @@ export class AreaRepository {
     async buscarPorId(id: number): Promise<Area | null> {
         const query = 'SELECT * FROM "Area" WHERE id_area = $1';
         const result = await db.query(query, [id]);
-        
+
         if (result.rows.length === 0) return null;
-        
+
+        const row = result.rows[0];
+        return new Area(row.id_area, row.nome);
+    }
+
+    async buscarPorNome(nome: string): Promise<Area | null> {
+        const query = 'SELECT * FROM "Area" WHERE LOWER(nome) = LOWER($1)';
+        const result = await db.query(query, [nome]);
+
+        if (result.rows.length === 0) return null;
+
         const row = result.rows[0];
         return new Area(row.id_area, row.nome);
     }
@@ -34,6 +44,25 @@ export class AreaRepository {
         const query = 'DELETE FROM "Area" WHERE id_area = $1';
         const result = await db.query(query, [id]);
         return result.rowCount !== null && result.rowCount > 0;
+    }
+
+    async contarCursosPublicados(idArea: number): Promise<number> {
+        const query = `
+            SELECT COUNT(*) as total 
+            FROM "Curso" 
+            WHERE id_area = $1 AND disponivel = true
+        `;
+        const result = await db.query(query, [idArea]);
+        return parseInt(result.rows[0].total);
+    }
+
+    async desvincularCursos(idArea: number): Promise<void> {
+        const query = `
+            UPDATE "Curso" 
+            SET id_area = NULL 
+            WHERE id_area = $1
+        `;
+        await db.query(query, [idArea]);
     }
 }
 
