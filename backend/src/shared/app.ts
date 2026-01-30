@@ -4,11 +4,14 @@ import administradorRoutes from '../modules/usuario/administrador/administradorR
 import { professorRoutes } from '../modules/usuario/usuarioCertificavel/professor/professorRoutes'; // Importe a rota
 import alunoRoutes from '../modules/usuario/usuarioCertificavel/aluno/alunoRoutes'
 import areaRoutes from '../modules/curso/area/areaRoutes'
+import { UsuarioController } from '../modules/usuario/usuarioController';
 
 // Importando APENAS as interfaces/tipos explicitamente
 import type { Application, Request, Response } from 'express';
 
 const app: Application = express();
+
+const usuarioController = new UsuarioController();
 
 // Middlewares
 app.use(cors());
@@ -24,6 +27,8 @@ app.use('/areas', areaRoutes);
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API rodando com sucesso!' });
 });
+
+app.post('/login', usuarioController.login);
 
 
 
