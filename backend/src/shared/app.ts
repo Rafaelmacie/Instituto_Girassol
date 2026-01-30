@@ -5,6 +5,7 @@ import { professorRoutes } from '../modules/usuario/usuarioCertificavel/professo
 import alunoRoutes from '../modules/usuario/usuarioCertificavel/aluno/alunoRoutes'
 import areaRoutes from '../modules/curso/area/areaRoutes'
 import { cursoRoutes } from '../modules/curso/cursoRoutes';
+import { UsuarioController } from '../modules/usuario/usuarioController';
 
 // Importando APENAS as interfaces/tipos explicitamente
 import type { Application, Request, Response } from 'express';
