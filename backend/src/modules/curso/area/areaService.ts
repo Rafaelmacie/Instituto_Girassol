@@ -7,9 +7,13 @@ export class AreaService {
         if (!nome || nome.trim().length < 3) {
             throw new Error('O nome da área deve ter pelo menos 3 caracteres.');
         }
-        
-        // ToDo: Poderíamos verificar se já existe uma área com esse nome aqui.
-        
+
+        // Verificar duplicidade (Case Insensitive)
+        const areaExistente = await areaRepository.buscarPorNome(nome);
+        if (areaExistente) {
+            throw new Error(`Já existe uma área cadastrada com o nome "${nome}" (ou similar).`);
+        }
+
         return await areaRepository.criar(nome);
     }
 
@@ -26,10 +30,28 @@ export class AreaService {
     }
 
     async excluir(id: number): Promise<void> {
-        // ToDo: Verificar se existem cursos vinculados a esta área antes de excluir (Integridade Referencial).
+        // Verifica se a área existe
+        const area = await areaRepository.buscarPorId(id);
+        if (!area) {
+            throw new Error('Área não encontrada para exclusão.');
+        }
+
+        // Bloqueio apenas se houver cursos disponíveis
+        const cursosAtivos = await areaRepository.contarCursosPublicados(id);
+
+        if (cursosAtivos > 0) {
+            throw new Error(
+                `Não é possível excluir esta área pois existem ${cursosAtivos} curso(s) ativo(S) vinculado(s) a ela. Desative os cursos antes de prosseguir.`
+            );
+        }
+
+        // Desvincular cursos inativos (setar id_area = null) para não dar erro de FK no banco.
+        await areaRepository.desvincularCursos(id);
+
+        // Agora é seguro excluir a área
         const deletou = await areaRepository.excluir(id);
         if (!deletou) {
-            throw new Error('Área não encontrada para exclusão.');
+            throw new Error('Erro ao excluir a área.');
         }
     }
 }
