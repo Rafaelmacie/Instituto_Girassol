@@ -39,6 +39,7 @@ services:
     ports:
       - "${FRONTEND_PORT}:5173"
     env_file:
+      - ./.env
       - ./frontend/.env
     volumes:
       - ./frontend:/app

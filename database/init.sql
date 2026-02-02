@@ -60,7 +60,7 @@ CREATE TABLE "Curso" (
   "id_curso" SERIAL PRIMARY KEY,
   "titulo" varchar(200) NOT NULL,
   "descricao" text,
-  "id_professor" int NOT NULL,
+  "id_professor" int,
   "id_area" int,
   "cargaHoraria" int, -- Em minutos, para facilitar cálculos
   "imagem" varchar(255),
