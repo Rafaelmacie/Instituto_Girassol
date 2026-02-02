@@ -29,6 +29,37 @@ export class AulaController {
             res.status(500).json({ message: 'Erro ao listar aulas.' });
         }
     }
+
+    async atualizar(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id || '0');
+            // req.file pode vir ou não (update parcial)
+            const aula = await aulaService.atualizar(id, req.body, req.file);
+            res.status(200).json(aula);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message || 'Erro ao atualizar aula.' });
+        }
+    }
+
+    async excluir(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id || '0');
+            await aulaService.excluir(id);
+            res.status(200).json({ message: "Aula excluída com sucesso." });
+        } catch (error: any) {
+            res.status(404).json({ message: error.message });
+        }
+    }
+
+    async buscarPorId(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id || '0');
+            const aula = await aulaService.buscarPorId(id);
+            res.status(200).json(aula);
+        } catch (error: any) {
+            res.status(404).json({ message: error.message });
+        }
+    }
 }
 
 export default new AulaController();
