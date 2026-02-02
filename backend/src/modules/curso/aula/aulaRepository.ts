@@ -31,6 +31,20 @@ export class AulaRepository {
         ));
     }
 
+
+    /* Calcula automaticamente a próxima ordem para um módulo. */
+    async obterProximaOrdem(idModulo: number): Promise<number> {
+        // COALESCE(MAX(ordem), 0) faz o seguinte:
+        // Pega o maior valor. Se for null (não tem aulas), considera 0.
+        // Depois somamos + 1.
+        const query = `
+            SELECT COALESCE(MAX(ordem), 0) + 1 as proxima_ordem 
+            FROM "Aula" 
+            WHERE id_modulo = $1
+        `;
+        const result = await db.query(query, [idModulo]);
+        return parseInt(result.rows[0].proxima_ordem);
+    }
     // ToDo: Métodos excluir e atualizar
 }
 

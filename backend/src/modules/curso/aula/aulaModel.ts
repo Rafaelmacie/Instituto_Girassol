@@ -6,6 +6,6 @@ export class Aula {
         public idModulo: number, // FK para o Módulo
         public linkVideo: string,
         public duracao: number,
-        public ordem: number = 1
+        public ordem: number
     ) { }
 }

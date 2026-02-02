@@ -82,7 +82,9 @@ CREATE TABLE "Aula" (
   "id_aula" SERIAL PRIMARY KEY,
   "titulo" varchar(200) NOT NULL,
   "descricao" text,
-  "minutos" int, -- Duração em minutos
+  "ordem" int DEFAULT 1,
+  "duracao" int, -- Duração em minutos
+  "linkVideo" varchar(255),
   "id_modulo" int NOT NULL,
   CONSTRAINT "FK_Aula_Modulo" FOREIGN KEY ("id_modulo") REFERENCES "Modulo"("id_modulo") ON DELETE CASCADE
 );
@@ -109,7 +111,8 @@ CREATE TABLE "Matricula" (
   "aulasAssistidas" int DEFAULT 0,
   "nota_final" float,
   CONSTRAINT "FK_Matricula_Aluno" FOREIGN KEY ("id_aluno") REFERENCES "Aluno"("id_usuario"),
-  CONSTRAINT "FK_Matricula_Curso" FOREIGN KEY ("id_curso") REFERENCES "Curso"("id_curso")
+  CONSTRAINT "FK_Matricula_Curso" FOREIGN KEY ("id_curso") REFERENCES "Curso"("id_curso"),
+  CONSTRAINT "UN_Aluno_Curso" UNIQUE ("id_aluno", "id_curso")
 );
 
 CREATE TABLE "ProgressoAula" (
