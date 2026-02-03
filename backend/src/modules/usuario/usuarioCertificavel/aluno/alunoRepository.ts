@@ -3,7 +3,6 @@ import database from '../../../../shared/config/db';
 
 export class AlunoRepository {
     async criar(aluno: any) {
-        // Use o método getClient() da sua classe Database
         const client = await database.getClient(); 
         
         try {
@@ -12,9 +11,12 @@ export class AlunoRepository {
             // 1. Inserir na tabela pai "Usuario"
             const queryUsuario = `
                 INSERT INTO "Usuario" (nome, "ultimoNome", email, senha, "tipoUsuario", "passe")
-                VALUES ($1, $2, $3, $4, 'Aluno', true) RETURNING id_usuario
+                VALUES ($1, $2, $3, $4, 'Aluno', $5) RETURNING id_usuario
             `;
-            const resUser = await client.query(queryUsuario, [aluno.nome, aluno.ultimoNome, aluno.email, aluno.senha]);
+            // Define passe como false se não for enviado
+            const passeValor = aluno.passe !== undefined ? aluno.passe : false;
+
+            const resUser = await client.query(queryUsuario, [aluno.nome, aluno.ultimoNome, aluno.email, aluno.senha, passeValor]);
             const idUsuario = resUser.rows[0].id_usuario;
 
             // 2. Inserir na tabela "UsuarioCertificavel"
@@ -27,43 +29,65 @@ export class AlunoRepository {
 
             await client.query('COMMIT');
             return idUsuario;
+
+        } catch (e: any) { // Note o ": any" para o TypeScript aceitar
+            await client.query('ROLLBACK');
+            
+            // Tratamento de erros de duplicidade
+            if (e.code === '23505') {
+                if (e.constraint === 'Usuario_email_key') throw new Error("Email já cadastrado.");
+                if (e.constraint === 'UsuarioCertificavel_cpf_key') throw new Error("CPF já cadastrado.");
+            }
+            throw e;
+        } finally {
+            client.release(); 
+        }
+    }
+
+async editar(id: number, dados: any): Promise<void> {
+        const client = await database.getClient();
+        try {
+            await client.query('BEGIN');
+
+            // 1. Verifica se o aluno existe antes de tentar editar
+            const checkQuery = `SELECT id_usuario FROM "Aluno" WHERE id_usuario = $1`;
+            const checkResult = await client.query(checkQuery, [id]);
+            
+            if (checkResult.rowCount === 0) {
+                throw new Error("Aluno não encontrado.");
+            }
+
+            // 2. Atualiza dados básicos na tabela Pai ("Usuario")
+            // COALESCE: Se o dado vir "undefined" ou "null", ele mantém o valor atual do banco
+            const queryUsuario = `
+                UPDATE "Usuario" 
+                SET 
+                    nome = COALESCE($1, nome), 
+                    "ultimoNome" = COALESCE($2, "ultimoNome"), 
+                    email = COALESCE($3, email),
+                    passe = COALESCE($4, passe)
+                WHERE id_usuario = $5
+            `;
+            await client.query(queryUsuario, [dados.nome, dados.ultimoNome, dados.email, dados.passe, id]);
+
+            // 3. Atualiza dados específicos na tabela Intermediária ("UsuarioCertificavel")
+            const queryCertificavel = `
+                UPDATE "UsuarioCertificavel" 
+                SET 
+                    cpf = COALESCE($1, cpf), 
+                    foto = COALESCE($2, foto)
+                WHERE id_usuario = $3
+            `;
+            await client.query(queryCertificavel, [dados.cpf, dados.foto, id]);
+
+            await client.query('COMMIT');
         } catch (e) {
             await client.query('ROLLBACK');
             throw e;
         } finally {
-            client.release(); // Libera o cliente de volta para o pool
+            client.release();
         }
     }
-
-    async editar(id: number, dados: any): Promise<void> {
-    const client = await database.getClient();
-    try {
-        await client.query('BEGIN');
-
-        // 1. Atualiza dados básicos na tabela Pai
-        const queryUsuario = `
-            UPDATE "Usuario" 
-            SET nome = $1, "ultimoNome" = $2, email = $3
-            WHERE id_usuario = $4
-        `;
-        await client.query(queryUsuario, [dados.nome, dados.ultimoNome, dados.email, id]);
-
-        // 2. Atualiza dados específicos na tabela Intermediária
-        const queryCertificavel = `
-            UPDATE "UsuarioCertificavel" 
-            SET cpf = $1, foto = $2
-            WHERE id_usuario = $3
-        `;
-        await client.query(queryCertificavel, [dados.cpf, dados.foto, id]);
-
-        await client.query('COMMIT');
-    } catch (e) {
-        await client.query('ROLLBACK');
-        throw e;
-    } finally {
-        client.release();
-    }
-}
 
     async listar(filtros: any) {
     // Começamos com a query base fazendo o JOIN nas 3 tabelas
@@ -93,7 +117,13 @@ export class AlunoRepository {
     }
 
     async excluir(id: number): Promise<void> {
-    const sql = `DELETE FROM "Usuario" WHERE id_usuario = $1`;
-    await database.query(sql, [id]);
-}
+        // Deletar da tabela PAI remove os filhos automaticamente (se configurado com Cascade no banco)
+        // Caso contrário, precisaria deletar na ordem inversa
+        const sql = `DELETE FROM "Usuario" WHERE id_usuario = $1`;
+        const result = await database.query(sql, [id]);
+
+        if (result.rowCount === 0) {
+            throw new Error("Aluno não encontrado para exclusão.");
+        }
+    }
 }

@@ -37,6 +37,17 @@ class MatriculaController {
             res.status(500).json({ message: 'Erro ao buscar matrículas.' });
         }
     }
+
+    async cancelar(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id || '0');
+            // Chama o serviço para excluir
+            await matriculaService.cancelar(id);
+            res.status(200).json({ message: "Matrícula cancelada com sucesso!" });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
 }
 
 export default new MatriculaController();

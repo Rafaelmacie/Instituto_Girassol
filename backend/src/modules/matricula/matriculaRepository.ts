@@ -52,6 +52,14 @@ class MatriculaRepository {
     async atualizarStatus(idMatricula: number, status: StatusMatricula): Promise<void> {
         await db.query(`UPDATE "Matricula" SET "statusMatricula" = $1 WHERE id_matricula = $2`, [status, idMatricula]);
     }
+
+    async excluir(idMatricula: number): Promise<void> {
+        const result = await db.query(`DELETE FROM "Matricula" WHERE id_matricula = $1`, [idMatricula]);
+
+        if (result.rowCount === 0) {
+            throw new Error("Matrícula não encontrada.");
+        }
+    }
 }
 
 export default new MatriculaRepository();
