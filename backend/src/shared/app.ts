@@ -9,6 +9,7 @@ import { UsuarioController } from '../modules/usuario/usuarioController';
 import matriculaRoutes from '../modules/matricula/matriculaRoutes';
 import aulaRoutes from '../modules/curso/aula/aulaRoutes';
 import { moduloRoutes } from '../modules/curso/modulo/moduloRoutes';
+import materialRoutes from '../modules/curso/aula/material/materialRoutes';
 
 // Importando APENAS as interfaces/tipos explicitamente
 import type { Application, Request, Response } from 'express';
@@ -30,6 +31,7 @@ app.use('/cursos', cursoRoutes);
 app.use('/matriculas', matriculaRoutes);
 app.use('/aulas', aulaRoutes);
 app.use('/modulos', moduloRoutes);
+app.use('/materiais', materialRoutes);
 
 // Rota teste
 app.get('/', (req: Request, res: Response) => {
