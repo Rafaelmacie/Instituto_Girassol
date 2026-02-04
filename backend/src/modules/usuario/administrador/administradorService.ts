@@ -21,7 +21,7 @@ export class AdministradorService {
         return await administradorRepository.criar(novoAdmin);
     }
 
-    async atualizar(id: number, dados: any): Promise<Administrador> {
+    async atualizar(id: number, dados: any): Promise<void> {
         // Instancia com o ID que veio da URL
         const adminEditado = new Administrador(
             id,
@@ -33,7 +33,11 @@ export class AdministradorService {
             dados.instagram
         );
 
-        return await administradorRepository.atualizar(adminEditado);
+        await administradorRepository.atualizar(adminEditado);
+    }
+
+    async listar() {
+        return await administradorRepository.listar();
     }
 }
 

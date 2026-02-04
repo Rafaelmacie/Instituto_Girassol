@@ -19,21 +19,36 @@ export class AdministradorController {
 
     async atualizar(req: Request, res: Response): Promise<void> {
         try {
-            // O "|| '0'" garante que sempre passamos uma string para o parseInt,
-            // mesmo que o params.id venha (impossivelmente) undefined.
             const id = parseInt(req.params.id || '0');
 
-            // Boa prática: Verificar se o ID é válido antes de chamar o serviço
             if (isNaN(id) || id === 0) {
                 res.status(400).json({ message: 'ID inválido fornecido.' });
                 return;
             }
 
-            const administrador = await administradorService.atualizar(id, req.body);
-            res.status(200).json(administrador);
-        } catch (error) {
+            // O service executa a atualização, mas não retorna nada (void)
+            await administradorService.atualizar(id, req.body);
+
+            // Então, retornamos uma mensagem de confirmação manual
+            res.status(200).json({ message: "Administrador atualizado com sucesso!" });
+            
+        } catch (error: any) {
+            if (error.message === 'Administrador não encontrado.') {
+                 res.status(404).json({ message: error.message });
+                 return;
+            }
             console.error(error);
             res.status(500).json({ message: 'Erro ao atualizar administrador.' });
+        }
+    }
+
+    async listar(req: Request, res: Response): Promise<void> {
+        try {
+            const lista = await administradorService.listar();
+            res.status(200).json(lista);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Erro ao listar administradores.' });
         }
     }
 }
