@@ -6,7 +6,7 @@ import alunoRoutes from '../modules/usuario/usuarioCertificavel/aluno/alunoRoute
 import areaRoutes from '../modules/curso/area/areaRoutes'
 import { cursoRoutes } from '../modules/curso/cursoRoutes';
 import { UsuarioController } from '../modules/usuario/usuarioController';
-import matriculaRoutes from '../modules/matricula/matriculaRoutes';
+import { matriculaRoutes } from '../modules/matricula/matriculaRoutes';
 import aulaRoutes from '../modules/curso/aula/aulaRoutes';
 import { moduloRoutes } from '../modules/curso/modulo/moduloRoutes';
 import materialRoutes from '../modules/curso/aula/material/materialRoutes';

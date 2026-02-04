@@ -24,6 +24,11 @@ class MatriculaService {
     async listarMeusCursos(idAluno: number) {
         return await matriculaRepository.listarPorAluno(idAluno);
     }
+
+    async cancelar(id: number): Promise<void> {
+        // Chama o repositório que você editou antes
+        return await matriculaRepository.excluir(id);
+    }
 }
 
 export default new MatriculaService();
