@@ -1,4 +1,5 @@
 import { AlunoRepository } from './alunoRepository';
+import { hashSenha } from '../../../../shared/utils/senhaUtils';
 
 export class AlunoService {
     private repository = new AlunoRepository();
@@ -6,6 +7,7 @@ export class AlunoService {
     async cadastrar(dados: any) {
         // Regra de negócio: Aluno sempre começa com passe livre
         dados.passe = true; 
+        dados.senha = await hashSenha(dados.senha);
         return await this.repository.criar(dados);
     }
 

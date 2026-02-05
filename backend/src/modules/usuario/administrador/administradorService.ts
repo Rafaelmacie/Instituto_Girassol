@@ -13,7 +13,7 @@ export class AdministradorService {
             dados.nome,
             dados.ultimoNome,
             dados.email,
-            dados.senha,
+            senhaCriptografada,
             dados.passe || false, // Default false
             dados.instagram
         );

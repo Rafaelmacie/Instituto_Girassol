@@ -42,6 +42,7 @@ export class AdministradorRepository {
             
             // Atualiza o ID do objeto para retornar
             admin.idUsuario = novoId;
+            delete (admin as any).senha;
             return admin;
 
         } catch (error) {
