@@ -8,9 +8,9 @@ export class CloudinaryStorageProvider implements interfaceStorageProvider {
     async salvarArquivo(file: Express.Multer.File, folder: string): Promise<{ url: string; duration: number }> {
         return new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
-                {
+                { 
                     folder: `conselho/instituto-girassol/${folder}`,
-                    resource_type: 'auto'
+                    resource_type: 'auto' // Cloudinary decide se é raw, video ou image
                 },
                 (error, result) => {
                     if (error) return reject(error);
@@ -30,48 +30,45 @@ export class CloudinaryStorageProvider implements interfaceStorageProvider {
 
         try {
             const publicId = this.extrairPublicId(url);
+            const resourceType = this.detectarResourceType(url);
 
-            const result = await cloudinary.uploader.destroy(publicId, {
-                resource_type: 'video',
-                invalidate: true
+            await cloudinary.uploader.destroy(publicId, { 
+                resource_type: resourceType, 
+                invalidate: true 
             });
 
         } catch (error) {
-            console.error(`❌ Erro ao deletar arquivo do Cloudinary:`, error);
+            console.error(`❌ Erro ao deletar arquivo do Cloudinary: ${url}`, error);
         }
     }
 
-    /**
-     * Extrai o Public ID completo (incluindo pastas)
-     */
     private extrairPublicId(url: string): string {
         try {
-            // 1. Tentativa via Regex (Mais robusta)
             const regex = /\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/;
             const match = url.match(regex);
+            if (match && match[1]) return match[1];
 
-            if (match && match[1]) {
-                return match[1];
-            }
-
-            // Fallback Manual (Correção do erro TS)
+            // Fallback manual
             const partesUrl = url.split('/conselho/');
-
-            // Verificamos se existe a segunda parte
             if (partesUrl.length > 1) {
-                const parteRelevante = partesUrl[1]; // Guardamos numa variável
-
+                const parteRelevante = partesUrl[1];
                 if (parteRelevante) {
                     const caminhoSemExtensao = parteRelevante.substring(0, parteRelevante.lastIndexOf('.'));
                     return `conselho/${caminhoSemExtensao}`;
                 }
             }
-
-            return "";
+            return ""; 
         } catch (error) {
-            console.error("Erro ao fazer parse da URL do Cloudinary", error);
             return "";
         }
+    }
+
+    /* Descobre se é 'video', 'image' ou 'raw' olhando a URL */
+    private detectarResourceType(url: string): string {
+        if (url.includes('/video/upload')) return 'video';
+        if (url.includes('/image/upload')) return 'image'; // PDFs costumam cair aqui
+        if (url.includes('/raw/upload')) return 'raw'; // Zips, CSVs caem aqui
+        return 'image'; // Padrão seguro
     }
 }
 

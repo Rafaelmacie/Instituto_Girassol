@@ -123,7 +123,6 @@ export class ProfessorRepository {
             }
 
             // 2. Atualiza tabela PAI ("Usuario")
-            // Incluído: ultimoNome e passe
             if (dados.nome || dados.email || dados.ultimoNome || dados.passe !== undefined) {
                 await client.query(
                     `UPDATE "Usuario" SET 
@@ -132,19 +131,28 @@ export class ProfessorRepository {
                         "ultimoNome" = COALESCE($3, "ultimoNome"),
                         passe = COALESCE($4, passe)
                      WHERE id_usuario = $5`,
-                    [dados.nome, dados.email, dados.ultimoNome, dados.passe, id]
+                    [
+                        dados.nome || null,         // <--- O segredo: converte undefined para null
+                        dados.email || null, 
+                        dados.ultimoNome || null, 
+                        dados.passe !== undefined ? dados.passe : null, 
+                        id
+                    ]
                 );
             }
 
-            // 3. Atualiza tabela INTERMEDIÁRIA ("UsuarioCertificavel") - NOVO
-            // Incluído: cpf e foto
+            // 3. Atualiza tabela INTERMEDIÁRIA ("UsuarioCertificavel")
             if (dados.cpf || dados.foto) {
                 await client.query(
                     `UPDATE "UsuarioCertificavel" SET 
                         cpf = COALESCE($1, cpf), 
                         foto = COALESCE($2, foto) 
                      WHERE id_usuario = $3`,
-                    [dados.cpf, dados.foto, id]
+                    [
+                        dados.cpf || null,          // <--- Converte undefined para null
+                        dados.foto || null, 
+                        id
+                    ]
                 );
             }
 
@@ -155,19 +163,22 @@ export class ProfessorRepository {
                         curriculo = COALESCE($1, curriculo), 
                         telefone = COALESCE($2, telefone) 
                      WHERE id_usuario = $3`,
-                    [dados.curriculo, dados.telefone, id]
+                    [
+                        dados.curriculo || null,    // <--- Converte undefined para null
+                        dados.telefone || null, 
+                        id
+                    ]
                 );
             }
 
             await client.query('COMMIT');
         } catch (error) {
             await client.query('ROLLBACK');
-            throw error; // Se o CPF novo já existir no banco, o erro de "Unique Constraint" estoura aqui
+            throw error;
         } finally {
             client.release();
         }
     }
-
     async delete(id: number): Promise<void> {
 
         // Tenta deletar da tabela PAI (Usuario). O CASCADE apaga o resto.

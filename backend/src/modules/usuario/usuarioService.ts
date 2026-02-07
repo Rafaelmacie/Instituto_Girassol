@@ -1,4 +1,5 @@
 import { UsuarioRepository } from '../usuario/usuarioRepository';
+import { compararSenha } from '../../shared/utils/senhaUtils';
 
 export class UsuarioService {
     private repository = new UsuarioRepository();
@@ -11,7 +12,9 @@ export class UsuarioService {
         }
 
         // Comparação simples de senha (depois vocês podem usar bcrypt aqui)
-        if (usuario.senha !== senha_enviada) {
+        const senhaValida = await compararSenha(senha_enviada, usuario.senha);
+
+        if (!senhaValida) {
             throw new Error("Senha incorreta.");
         }
 

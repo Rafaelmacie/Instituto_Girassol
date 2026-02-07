@@ -42,6 +42,7 @@ export class AdministradorRepository {
             
             // Atualiza o ID do objeto para retornar
             admin.idUsuario = novoId;
+            delete (admin as any).senha;
             return admin;
 
         } catch (error) {
@@ -56,43 +57,61 @@ export class AdministradorRepository {
      * Atualiza dados do Administrador.
      * Precisa atualizar tanto a tabela Pai quanto a Filha.
      */
-    async atualizar(admin: Administrador): Promise<Administrador> {
+async atualizar(admin: Administrador): Promise<void> {
         const client = await db.getClient();
-
         try {
             await client.query('BEGIN');
 
-            // Atualiza a Tabela Pai
+            // 1. Atualiza a tabela PAI (Usuario)
+            // Usamos COALESCE para manter o valor antigo se o novo for null/undefined
             const queryUsuario = `
                 UPDATE "Usuario"
-                SET nome = $1, "ultimoNome" = $2, email = $3, senha = $4
+                SET 
+                    nome = COALESCE($1, nome),
+                    "ultimoNome" = COALESCE($2, "ultimoNome"),
+                    email = COALESCE($3, email),
+                    passe = COALESCE($4, passe)
                 WHERE id_usuario = $5
             `;
-            await client.query(queryUsuario, [
-                admin.nome, 
-                admin.ultimoNome, 
-                admin.email, 
-                admin.senha, 
-                admin.idUsuario
-            ]);
+            const valuesUsuario = [admin.nome, admin.ultimoNome, admin.email, admin.passe, admin.idUsuario];
+            const resultUsuario = await client.query(queryUsuario, valuesUsuario);
 
-            // Atualiza a Tabela Filha
-            const queryAdmin = `
-                UPDATE "Administrador"
-                SET instagram = $1
-                WHERE id_usuario = $2
-            `;
-            await client.query(queryAdmin, [admin.instagram, admin.idUsuario]);
+            // --- AQUI ESTÁ A CORREÇÃO ---
+            // Se nenhuma linha foi afetada na tabela de usuários, o ID não existe.
+            if (resultUsuario.rowCount === 0) {
+                throw new Error('Administrador não encontrado.');
+            }
+            // -----------------------------
+
+            // 2. Atualiza a tabela FILHA (Administrador)
+            // Assumindo que o campo 'instagram' fica nesta tabela
+            if (admin.instagram) {
+                const queryAdmin = `
+                    UPDATE "Administrador"
+                    SET instagram = $1
+                    WHERE id_usuario = $2
+                `;
+                await client.query(queryAdmin, [admin.instagram, admin.idUsuario]);
+            }
 
             await client.query('COMMIT');
-            return admin;
-
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
         } finally {
             client.release();
         }
+    }
+
+    async listar(): Promise<any[]> {
+        // Faz o JOIN para pegar dados do Usuario (Nome, Email) + dados do Admin (Instagram)
+        const query = `
+            SELECT u.id_usuario, u.nome, u."ultimoNome", u.email, u.passe, a.instagram
+            FROM "Administrador" a
+            JOIN "Usuario" u ON a.id_usuario = u.id_usuario
+        `;
+        const result = await db.query(query, []);
+        return result.rows;
     }
 }
 

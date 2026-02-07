@@ -1,6 +1,6 @@
-// backend/src/modules/usuario/usuarioCertificavel/professor/professorService.ts
 import { ProfessorRepository } from './professorRepository';
-import bcrypt from 'bcrypt'; // Lembre de instalar: npm install bcrypt
+// 1. Importar a ferramenta de hash
+import { hashSenha } from '../../../../shared/utils/senhaUtils'; 
 
 export class ProfessorService {
     private professorRepository: ProfessorRepository;
@@ -10,19 +10,24 @@ export class ProfessorService {
     }
 
     async createProfessor(data: any) {
-        // 1. Validação básica
+        // Validações básicas
         if (!data.email || !data.senha || !data.nome || !data.cpf) {
             throw new Error("Campos obrigatórios faltando: email, senha, nome, cpf");
         }
 
-        // 2. Criptografia da senha
-        const salt = await bcrypt.genSalt(10);
-        data.senha = await bcrypt.hash(data.senha, salt);
+        // --- A CORREÇÃO MÁGICA ---
+        // 2. Criptografa a senha que veio do formulário
+        const senhaHash = await hashSenha(data.senha);
 
-        // 3. Chama repository
+        // 3. SUBSTITUI a senha original ("123") pela criptografada ("$2b$10$...")
+        // Se pularmos essa linha, o banco salva "123" e o login falha.
+        data.senha = senhaHash; 
+
+        // 4. Agora mandamos o objeto 'data' com a senha segura para o repositório
         return await this.professorRepository.create(data);
     }
 
+    // ... Resto dos métodos continua igual ...
     async getProfessores(filters: any) {
         return await this.professorRepository.findAll(filters);
     }
@@ -34,7 +39,6 @@ export class ProfessorService {
     }
 
     async updateProfessor(id: number, data: any) {
-        // Se for atualizar senha, precisaria re-hash. Aqui simplifiquei.
         return await this.professorRepository.update(id, data);
     }
 
