@@ -11,6 +11,7 @@ import aulaRoutes from '../modules/curso/aula/aulaRoutes';
 import { moduloRoutes } from '../modules/curso/modulo/moduloRoutes';
 import { avaliacaoRoutes } from '../modules/curso/avaliacao/avaliacaoRoutes';
 import materialRoutes from '../modules/curso/aula/material/materialRoutes';
+import { questaoRoutes } from '../modules/curso/avaliacao/questao/questaoRoutes';
 
 
 // Importando APENAS as interfaces/tipos explicitamente
@@ -35,6 +36,7 @@ app.use('/aulas', aulaRoutes);
 app.use('/modulos', moduloRoutes);
 app.use('/avaliacoes', avaliacaoRoutes);
 app.use('/materiais', materialRoutes);
+app.use('/questoes', questaoRoutes);
 
 
 // Rota teste
