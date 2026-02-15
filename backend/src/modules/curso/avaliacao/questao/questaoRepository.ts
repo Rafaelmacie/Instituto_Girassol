@@ -35,6 +35,13 @@ export class QuestaoRepository {
         return result.rows[0];
     }
 
+    async contarPorAvaliacao(idAvaliacao: number): Promise<number> {
+    const query = `SELECT COUNT(*) FROM "Questao" WHERE id_Avaliacao = $1`;
+    const result = await db.query(query, [idAvaliacao]);
+    
+    return Number(result.rows[0].count);
+    }
+
     async delete(id: number) {
         const result = await db.query(`DELETE FROM "Questao" WHERE id_questao = $1`, [id]);
         if (result.rowCount === 0) throw new Error("Questão não encontrada.");

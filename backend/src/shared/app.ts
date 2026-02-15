@@ -13,6 +13,7 @@ import { avaliacaoRoutes } from '../modules/curso/avaliacao/avaliacaoRoutes';
 import materialRoutes from '../modules/curso/aula/material/materialRoutes';
 import { questaoRoutes } from '../modules/curso/avaliacao/questao/questaoRoutes';
 import progressoAulaRoutes from '../modules/matricula/progressoAula/progressoAulaRoutes';
+import opcaoRoutes from '../modules/curso/avaliacao/opcao/opcaoRoutes';
 
 // Importando APENAS as interfaces/tipos explicitamente
 import type { Application, Request, Response } from 'express';
@@ -39,6 +40,7 @@ app.use('/avaliacoes', avaliacaoRoutes);
 app.use('/materiais', materialRoutes);
 app.use('/questoes', questaoRoutes);
 app.use('/progresso', progressoAulaRoutes); 
+app.use('/opcoes', opcaoRoutes);
 
 
 // Rota teste
