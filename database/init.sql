@@ -1,11 +1,12 @@
--- 1. CRIAÇÃO DOS TIPOS (ENUMS)
+-- CRIAÇÃO DOS TIPOS (ENUMS)
 CREATE TYPE "status_matricula_enum" AS ENUM ('Cancelada', 'Em_andamento', 'Concluida');
 CREATE TYPE "tipo_usuario_enum" AS ENUM ('Administrador', 'Professor', 'Aluno');
 CREATE TYPE "tipo_certificado_enum" AS ENUM ('Docencia', 'Conclusao');
 CREATE TYPE "tipo_material_enum" AS ENUM ('PDF', 'Zip', 'Link', 'xlsx', 'Csv');
 CREATE TYPE "tipo_questao_enum" AS ENUM ('Unica_Escolha', 'Multipla_Escolha');
 
--- 2. TABELAS DE USUÁRIOS (HERANÇA ESTRATÉGIA JOINED)
+
+-- TABELAS DE USUÁRIOS (HERANÇA ESTRATÉGIA JOINED)
 
 -- Tabela Pai
 CREATE TABLE "Usuario" (
@@ -49,7 +50,9 @@ CREATE TABLE "Aluno" (
     FOREIGN KEY ("id_usuario") REFERENCES "UsuarioCertificavel"("id_usuario") ON DELETE CASCADE
 );
 
--- 3. ESTRUTURA DE CURSOS
+
+
+-- ESTRUTURA DE CURSOS
 
 CREATE TABLE "Area" (
   "id_area" SERIAL PRIMARY KEY,
@@ -99,7 +102,7 @@ CREATE TABLE "Material" (
   CONSTRAINT "FK_Material_Aula" FOREIGN KEY ("id_aula") REFERENCES "Aula"("id_aula") ON DELETE CASCADE
 );
 
--- 4. MATRÍCULA E PROGRESSO
+-- MATRÍCULA E PROGRESSO
 
 CREATE TABLE "Matricula" (
   "id_matricula" SERIAL PRIMARY KEY,
@@ -127,28 +130,9 @@ CREATE TABLE "ProgressoAula" (
   CONSTRAINT "UN_Progresso_Matricula_Aula" UNIQUE ("id_matricula", "id_aula")
 );
 
--- 5. INTERAÇÃO (COMENTÁRIOS)
--- Ajuste Crítico: Mudado de id_aluno para id_usuario para permitir Professor/Admin comentar
 
-CREATE TABLE "Comentario" (
-  "id_comentario" SERIAL PRIMARY KEY,
-  "texto" text NOT NULL,
-  "id_aula" int NOT NULL,
-  "id_usuario" int NOT NULL, -- Generalizado
-  CONSTRAINT "FK_Comentario_Aula" FOREIGN KEY ("id_aula") REFERENCES "Aula"("id_aula") ON DELETE CASCADE,
-  CONSTRAINT "FK_Comentario_Usuario" FOREIGN KEY ("id_usuario") REFERENCES "Usuario"("id_usuario")
-);
 
-CREATE TABLE "RespostaComentario" (
-  "id_resposta" SERIAL PRIMARY KEY,
-  "texto" text NOT NULL,
-  "id_usuario" int NOT NULL, -- Generalizado (Professor ou Aluno podem responder)
-  "id_comentario" int NOT NULL,
-  CONSTRAINT "FK_Resp_Usuario" FOREIGN KEY ("id_usuario") REFERENCES "Usuario"("id_usuario"),
-  CONSTRAINT "FK_Resp_Comentario" FOREIGN KEY ("id_comentario") REFERENCES "Comentario"("id_comentario") ON DELETE CASCADE
-);
-
--- 6. MOTOR DE AVALIAÇÃO
+-- MOTOR DE AVALIAÇÃO
 
 CREATE TABLE "Avaliacao" (
   "id_avaliacao" SERIAL PRIMARY KEY,
@@ -176,7 +160,8 @@ CREATE TABLE "Opcao" (
 
 CREATE TABLE "TentativaAvaliacao" (
   "id_tentativa" SERIAL PRIMARY KEY,
-  "data_hora" timestamp DEFAULT CURRENT_TIMESTAMP, -- Mudei de date para timestamp
+  "data_hora" timestamp DEFAULT CURRENT_TIMESTAMP,
+  "finalizada" BOOLEAN DEFAULT FALSE,
   "nota_adquirida" float,
   "id_matricula" int NOT NULL,
   "id_avaliacao" int NOT NULL,
@@ -195,7 +180,30 @@ CREATE TABLE "RespostaQuestao" (
   CONSTRAINT "FK_RQ_Opcao" FOREIGN KEY ("id_opcao") REFERENCES "Opcao"("id_opcao")
 );
 
--- 7. CERTIFICADO
+
+-- INTERAÇÃO (COMENTÁRIOS)
+
+CREATE TABLE "Comentario" (
+  "id_comentario" SERIAL PRIMARY KEY,
+  "texto" text NOT NULL,
+  "id_aula" int NOT NULL,
+  "id_usuario" int NOT NULL, -- Generalizado
+  CONSTRAINT "FK_Comentario_Aula" FOREIGN KEY ("id_aula") REFERENCES "Aula"("id_aula") ON DELETE CASCADE,
+  CONSTRAINT "FK_Comentario_Usuario" FOREIGN KEY ("id_usuario") REFERENCES "Usuario"("id_usuario")
+);
+
+CREATE TABLE "RespostaComentario" (
+  "id_resposta" SERIAL PRIMARY KEY,
+  "texto" text NOT NULL,
+  "id_usuario" int NOT NULL, -- Generalizado (Professor ou Aluno podem responder)
+  "id_comentario" int NOT NULL,
+  CONSTRAINT "FK_Resp_Usuario" FOREIGN KEY ("id_usuario") REFERENCES "Usuario"("id_usuario"),
+  CONSTRAINT "FK_Resp_Comentario" FOREIGN KEY ("id_comentario") REFERENCES "Comentario"("id_comentario") ON DELETE CASCADE
+);
+
+
+
+-- CERTIFICADO
 
 CREATE TABLE "Certificado" (
   "id_certificado" SERIAL PRIMARY KEY,
