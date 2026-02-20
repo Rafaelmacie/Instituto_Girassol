@@ -1,4 +1,4 @@
-import { StatusMatricula } from "../../shared/constants/statusMatricula";
+import { StatusMatricula } from "../../../shared/constants/statusMatricula";
 
 export class Matricula {
     constructor(

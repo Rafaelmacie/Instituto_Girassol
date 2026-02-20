@@ -31,10 +31,10 @@ export class TentativaAvaliacaoController {
     async finalizar(req: Request, res: Response): Promise<void> {
         try {
             const idTentativa = parseInt(req.params.id || '0');
-            // Supomos que o front ou o service de correção mande a nota por enquanto
-            const { nota } = req.body;
 
+            // Chamamos o service apenas com o ID. A nota é calculada lá dentro!
             const resultado = await tentativaAvaliacaoService.finalizarTentativa(idTentativa);
+
             res.status(200).json(resultado);
         } catch (error: any) {
             res.status(400).json({ message: error.message || 'Erro ao finalizar tentativa.' });
@@ -55,7 +55,7 @@ export class TentativaAvaliacaoController {
             }
 
             const tentativa = await tentativaAvaliacaoService.buscarTentativaAtiva(idMatricula, idAvaliacao);
-            
+
             // Retorna 200 com a tentativa (ou null se não tiver)
             res.status(200).json(tentativa);
         } catch (error: any) {

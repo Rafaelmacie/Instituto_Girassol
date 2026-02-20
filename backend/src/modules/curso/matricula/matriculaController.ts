@@ -6,7 +6,7 @@ class MatriculaController {
     async criar(req: Request, res: Response): Promise<void> {
         try {
             const { idAluno, idCurso } = req.body;
-            
+
             if (!idAluno || !idCurso) {
                 res.status(400).json({ message: 'idAluno e idCurso são obrigatórios.' });
                 return;
@@ -30,7 +30,7 @@ class MatriculaController {
             // No futuro, pegaremos o ID do token JWT (req.user.id).
             // Por enquanto, vamos pegar via params ou query para teste.
             const idAluno = parseInt(req.params.idAluno || '0');
-            
+
             const cursos = await matriculaService.listarMeusCursos(idAluno);
             res.status(200).json(cursos);
         } catch (error: any) {
@@ -46,6 +46,16 @@ class MatriculaController {
             res.status(200).json({ message: "Matrícula cancelada com sucesso!" });
         } catch (error: any) {
             res.status(400).json({ message: error.message });
+        }
+    }
+
+    async buscarPorId(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id || '0');
+            const matricula = await matriculaService.buscarPorId(id);
+            res.status(200).json(matricula);
+        } catch (error: any) {
+            res.status(404).json({ message: error.message });
         }
     }
 }

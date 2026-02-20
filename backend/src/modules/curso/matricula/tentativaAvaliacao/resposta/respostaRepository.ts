@@ -1,11 +1,21 @@
-import db from '../../../../shared/config/db';
+import db from '../../../../../shared/config/db';
 
 export class RespostaRepository {
     // Busca se a opção é correta para podermos salvar a flag 'eh_correta'
-    async verificarOpcaoCorreta(idOpcao: number): Promise<boolean> {
-        const query = `SELECT correta FROM "Opcao" WHERE id_opcao = $1`;
-        const result = await db.query(query, [idOpcao]);
-        if (result.rowCount === 0) throw new Error("Opção não encontrada.");
+    async verificarOpcaoCorreta(idOpcao: number, idQuestao: number): Promise<boolean> {
+        const query = `
+            SELECT correta 
+            FROM "Opcao" 
+            WHERE id_opcao = $1 AND id_questao = $2
+        `;
+        const result = await db.query(query, [idOpcao, idQuestao]);
+
+        // Se a query retornar vazio, significa que ou a opção não existe, 
+        // ou existe mas pertence a outra questão.
+        if ((result.rowCount || 0) === 0) {
+            throw new Error("Opção inválida ou não pertence a esta questão.");
+        }
+
         return result.rows[0].correta;
     }
 
@@ -14,7 +24,7 @@ export class RespostaRepository {
         const checkQuery = `SELECT id_resposta_questao FROM "RespostaQuestao" WHERE id_tentativa = $1 AND id_questao = $2`;
         const checkResult = await db.query(checkQuery, [idTentativa, idQuestao]);
 
-        if (checkResult.rowCount > 0) {
+        if ((checkResult.rowCount || 0) > 0) {
             // Se já respondeu e mudou de ideia, a gente atualiza a resposta
             const updateQuery = `
                 UPDATE "RespostaQuestao" 

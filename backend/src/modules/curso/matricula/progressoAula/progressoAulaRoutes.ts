@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import progressoAulaController from '../../../modules/matricula/progressoAula/progressoAulaController'; 
+import progressoAulaController from './progressoAulaController'; 
 
 const router = Router();
 

@@ -72,6 +72,27 @@ export class TentativaAvaliacaoRepository {
         if (result.rows.length === 0) return null;
         return this.mapRowToModel(result.rows[0]);
     }
+
+    // Busca quantas questões o aluno acertou nesta tentativa específica
+    async contarRespostasCorretas(idTentativa: number): Promise<number> {
+        const query = `
+            SELECT COUNT(*) 
+            FROM "RespostaQuestao" 
+            WHERE id_tentativa = $1 AND eh_correta = true
+        `;
+        const result = await db.query(query, [idTentativa]);
+        // O COUNT no Postgres retorna uma string, então usamos parseInt
+        return parseInt(result.rows[0].count || '0');
+    }
+
+    // Busca o total de questões daquela prova
+    async obterNumeroQuestoes(idAvaliacao: number): Promise<number> {
+        const query = `SELECT numero_questoes FROM "Avaliacao" WHERE id_avaliacao = $1`;
+        const result = await db.query(query, [idAvaliacao]);
+
+        if (result.rows.length === 0) return 0;
+        return parseInt(result.rows[0].numero_questoes || '0');
+    }
 }
 
 export default new TentativaAvaliacaoRepository();

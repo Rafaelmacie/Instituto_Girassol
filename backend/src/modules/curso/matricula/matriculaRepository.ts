@@ -1,6 +1,6 @@
-import db from '../../shared/config/db';
+import db from '../../../shared/config/db';
 import { Matricula } from './matriculaModel';
-import { StatusMatricula } from '../../shared/constants/statusMatricula'; 
+import { StatusMatricula } from '../../../shared/constants/statusMatricula';
 
 export class MatriculaRepository {
 
@@ -15,13 +15,13 @@ export class MatriculaRepository {
         const row = result.rows[0];
 
         return new Matricula(
-            row.id_matricula, 
-            row.data, 
+            row.id_matricula,
+            row.data,
             row.statusMatricula,
-            row.id_aluno, 
-            row.id_curso, 
-            row.favoritada, 
-            row.aulasAssistidas, 
+            row.id_aluno,
+            row.id_curso,
+            row.favoritada,
+            row.aulasAssistidas,
             row.nota_final
         );
     }
@@ -69,5 +69,25 @@ export class MatriculaRepository {
             WHERE "id_matricula" = $2
         `;
         await db.query(query, [total, idMatricula]);
+    }
+
+
+    async buscarPorId(idMatricula: number): Promise<Matricula | null> {
+        const query = `SELECT * FROM "Matricula" WHERE id_matricula = $1`;
+        const result = await db.query(query, [idMatricula]);
+
+        if (result.rows.length === 0) return null;
+
+        const row = result.rows[0];
+        return new Matricula(
+            row.id_matricula,
+            row.data,
+            row.statusMatricula,
+            row.id_aluno,
+            row.id_curso,
+            row.favoritada,
+            row.aulasAssistidas,
+            row.nota_final
+        );
     }
 }

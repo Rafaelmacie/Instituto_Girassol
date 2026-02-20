@@ -11,7 +11,7 @@ export class RespostaService {
         }
 
         // Descobre se a opção que o aluno marcou é a certa
-        const ehCorreta = await this.repo.verificarOpcaoCorreta(idOpcao);
+        const ehCorreta = await this.repo.verificarOpcaoCorreta(idOpcao, idQuestao);
 
         // Salva a resposta no banco
         return await this.repo.salvarResposta(idTentativa, idQuestao, idOpcao, ehCorreta);

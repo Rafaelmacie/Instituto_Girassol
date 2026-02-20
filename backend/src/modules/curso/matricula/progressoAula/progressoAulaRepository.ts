@@ -1,4 +1,4 @@
-import db from '../../../shared/config/db';
+import db from '../../../../shared/config/db';
 
 export class ProgressoAulaRepository {
 

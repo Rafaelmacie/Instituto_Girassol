@@ -1,4 +1,5 @@
 import tentativaAvaliacaoRepository from './tentativaAvaliacaoRepository';
+import calculadoraNotaService from '../calculadoraNota/calculadoraNotaService';
 
 export class TentativaAvaliacaoService {
 
@@ -63,40 +64,50 @@ export class TentativaAvaliacaoService {
     async finalizarTentativa(idTentativa: number) {
         const tentativa = await tentativaAvaliacaoRepository.buscarPorId(idTentativa);
 
-        if (!tentativa) {
-            throw new Error("Tentativa não encontrada.");
-        }
+        if (!tentativa) throw new Error("Tentativa não encontrada.");
+        if (tentativa.finalizada) throw new Error("Esta tentativa já foi finalizada.");
 
-        if (tentativa.finalizada) {
-            throw new Error("Esta tentativa já foi finalizada anteriormente.");
-        }
+        // Calcula a nota da prova
+        const notaFinal = await this.calcularNota(tentativa);
 
-        // Validação de tempo
-        const agora = new Date().getTime();
-        const inicio = new Date(tentativa.dataHora).getTime();
-        if ((agora - inicio) > this.TEMPO_LIMITE_MS) {
-            console.warn(`⚠️ Aluno finalizou a tentativa ${idTentativa} fora do prazo.`);
-        }
+        // Finaliza a tentativa no banco
+        const tentativaFinalizada = await tentativaAvaliacaoRepository.finalizar(idTentativa, notaFinal);
 
-        // Calcula a nota internamente
-        const notaFinal = await this.calcularNota(idTentativa);
+        // Recalcula a nota geral do curso em background
+        // Mandamos o idMatricula para a calculadora fazer o trabalho dela
+        await calculadoraNotaService.atualizarNotaFinal(tentativa.idMatricula);
 
-        return await tentativaAvaliacaoRepository.finalizar(idTentativa, notaFinal);
+        return tentativaFinalizada;
     }
 
     /**
-     * Lógica de Correção da Prova.
-     * Atualmente é um esqueleto esperando a implementação das Questões.
+     * Calcula a nota final baseada nas respostas gravadas no banco.
      */
-    private async calcularNota(idTentativa: number): Promise<number> {
-        // TODO: Quando a tabela 'RespostaQuestao' existir:
-        // 1. Buscar todas as respostas do aluno para esta tentativa (SELECT * FROM RespostaQuestao WHERE id_tentativa = ...)
-        // 2. Buscar o gabarito (Opcao.correta = true)
-        // 3. Comparar e somar pontos
+    private async calcularNota(tentativa: any): Promise<number> {
+        try {
+            // Quantas questões a prova tem no total?
+            const totalQuestoes = await tentativaAvaliacaoRepository.obterNumeroQuestoes(tentativa.idAvaliacao);
 
-        console.log(`🧮 Calculando nota para tentativa ${idTentativa}... (Lógica pendente)`);
+            if (totalQuestoes === 0) {
+                console.warn(`A avaliação ${tentativa.idAvaliacao} não tem 'numero_questoes' definido.`);
+                return 0; // Evita divisão por zero
+            }
 
-        return 0; // Por enquanto retorna 0 até termos questões reais.
+            // Quantas questões o aluno acertou?
+            const acertos = await tentativaAvaliacaoRepository.contarRespostasCorretas(tentativa.idTentativa);
+
+            console.log(`📊 Correção da Tentativa ${tentativa.idTentativa}: Acertou ${acertos} de ${totalQuestoes}`);
+
+            // Regra de 3 para nota de 0 a 10
+            const notaCalculada = (acertos / totalQuestoes) * 10;
+
+            // Retorna arredondado para 2 casas decimais (ex: 8.33333 -> 8.33)
+            return Number(notaCalculada.toFixed(2));
+
+        } catch (error) {
+            console.error(`Erro ao calcular nota da tentativa ${tentativa.idTentativa}:`, error);
+            return 0;
+        }
     }
 
     async listarHistoricoAluno(idMatricula: number) {
