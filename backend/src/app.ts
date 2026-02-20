@@ -15,6 +15,7 @@ import { questaoRoutes } from './modules/curso/avaliacao/questao/questaoRoutes';
 import progressoAulaRoutes from './modules/matricula/progressoAula/progressoAulaRoutes';
 import opcaoRoutes from './modules/curso/avaliacao/opcao/opcaoRoutes';
 import tentativaRoutes from './modules/curso/avaliacao/tentativaAvaliacao/tentativaAvalaicaoRoutes'
+import { respostaRoutes } from './modules/curso/avaliacao/resposta/respostaRoutes';
 
 // Importando APENAS as interfaces/tipos explicitamente
 import type { Application, Request, Response } from 'express';
@@ -43,6 +44,7 @@ app.use('/questoes', questaoRoutes);
 app.use('/progresso', progressoAulaRoutes); 
 app.use('/opcoes', opcaoRoutes);
 app.use('/tentativas', tentativaRoutes);
+app.use('/respostas', respostaRoutes);
 
 // Rota teste
 app.get('/', (req: Request, res: Response) => {
