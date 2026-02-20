@@ -58,6 +58,18 @@ class MatriculaController {
             res.status(404).json({ message: error.message });
         }
     }
+
+    async solicitarCertificado(req: Request, res: Response): Promise<void> {
+        try {
+            const idMatricula = parseInt(req.params.id || '0');
+
+            const resultado = await matriculaService.solicitarCertificado(idMatricula);
+
+            res.status(200).json(resultado);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
 }
 
 export default new MatriculaController();

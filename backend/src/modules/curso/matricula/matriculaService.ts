@@ -37,6 +37,41 @@ class MatriculaService {
         }
         return matricula;
     }
+
+    async solicitarCertificado(idMatricula: number): Promise<any> {
+        // Busca a matrícula completa
+        const matricula = await this.buscarPorId(idMatricula);
+
+        // Validação da Nota Final
+        // Assumindo que a nota de corte é 7.0 (>= 7)
+        if (matricula.notaFinal === null || matricula.notaFinal < 7) {
+            throw new Error(`Reprovado por Nota. Sua nota final é ${matricula.notaFinal || 0}, mas a nota mínima é 7.0.`);
+        }
+
+        // Validação do Progresso das Aulas
+        const totalAulasDoCurso = await this.matriculaRepository.contarTotalAulasDoCurso(matricula.idCurso);
+        
+        if (totalAulasDoCurso === 0) {
+            throw new Error("Este curso ainda não possui aulas cadastradas.");
+        }
+
+        if (matricula.aulasAssistidas < totalAulasDoCurso) {
+            throw new Error(`Reprovado por Frequência. Você assistiu ${matricula.aulasAssistidas} de ${totalAulasDoCurso} aulas.`);
+        }
+
+        // Se passou nas duas validações, atualizamos o status da matrícula para CONCLUIDA
+        await this.matriculaRepository.atualizarStatus(idMatricula, StatusMatricula.CONCLUIDO);
+
+        // ToDo: disparar uma chamada para o serviço de Certificado
+        // Ex: const linkCertificado = await certificadoService.gerar(idMatricula);
+
+        return {
+            aprovado: true,
+            message: "Parabéns! Você foi aprovado e seu certificado já pode ser gerado.",
+            notaFinal: matricula.notaFinal,
+            frequencia: `${matricula.aulasAssistidas}/${totalAulasDoCurso}`
+        };
+    }
 }
 
 export default new MatriculaService();

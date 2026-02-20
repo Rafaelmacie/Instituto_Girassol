@@ -15,4 +15,7 @@ matriculaRoutes.get('/:id', matriculaController.buscarPorId.bind(matriculaContro
 // DELETE /matriculas/:id -> Cancela a matrícula
 matriculaRoutes.delete('/:id', matriculaController.cancelar.bind(matriculaController));
 
+// PATCH /matriculas/:id/solicitar-certificado -> Verifica aprovação
+matriculaRoutes.patch('/:id/solicitar-certificado', matriculaController.solicitarCertificado.bind(matriculaController));
+
 export { matriculaRoutes };

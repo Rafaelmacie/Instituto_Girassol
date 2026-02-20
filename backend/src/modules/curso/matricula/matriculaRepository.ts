@@ -90,4 +90,16 @@ export class MatriculaRepository {
             row.nota_final
         );
     }
+
+    // Conta quantas aulas o curso tem no total (juntando todos os módulos)
+    async contarTotalAulasDoCurso(idCurso: number): Promise<number> {
+        const query = `
+            SELECT COUNT(a.id_aula) 
+            FROM "Aula" a
+            JOIN "Modulo" m ON a.id_modulo = m.id_modulo
+            WHERE m.id_curso = $1
+        `;
+        const result = await db.query(query, [idCurso]);
+        return parseInt(result.rows[0].count || '0');
+    }
 }
