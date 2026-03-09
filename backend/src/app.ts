@@ -16,6 +16,7 @@ import progressoAulaRoutes from './modules/curso/matricula/progressoAula/progres
 import opcaoRoutes from './modules/curso/avaliacao/opcao/opcaoRoutes';
 import tentativaRoutes from './modules/curso/matricula/tentativaAvaliacao/tentativaAvalaicaoRoutes'
 import { respostaRoutes } from './modules/curso/matricula/tentativaAvaliacao/resposta/respostaRoutes';
+import { comentarioRoutes } from './modules/forum/comentario/comentarioRoutes'; 
 
 // Importando APENAS as interfaces/tipos explicitamente
 import type { Application, Request, Response } from 'express';
@@ -45,6 +46,7 @@ app.use('/progresso', progressoAulaRoutes);
 app.use('/opcoes', opcaoRoutes);
 app.use('/tentativas', tentativaRoutes);
 app.use('/respostas', respostaRoutes);
+app.use('/comentarios', comentarioRoutes);
 
 // Rota teste
 app.get('/', (req: Request, res: Response) => {

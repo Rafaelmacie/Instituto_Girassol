@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import opcaoController from './opcaoController'; // Ajuste o caminho se necessário
+import opcaoController from './opcaoController'; 
 
 const router = Router();
 
