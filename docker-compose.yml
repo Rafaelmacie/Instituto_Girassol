@@ -45,5 +45,16 @@ services:
       - ./frontend:/app
       - /app/node_modules
 
+  # Serviço Browserless (Para gerar PDF de certificados)
+  browserless:
+    image: ghcr.io/browserless/chromium:latest
+    container_name: girassol_browserless
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - DEFAULT_BLOCK_ADS=true
+      - DEFAULT_IGNORE_HTTPS_ERRORS=true
+
 volumes:
   pgdata:
