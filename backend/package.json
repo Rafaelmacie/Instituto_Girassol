@@ -6,7 +6,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "multer": "^2.0.2",
-    "pg": "^8.17.1"
+    "pg": "^8.17.1",
+    "puppeteer-core": "^25.13.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

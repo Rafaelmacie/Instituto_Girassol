@@ -1,4 +1,4 @@
 export enum TipoCertificado {
-    DOCENCIA = 'Docência',
-    CONCLUSAO = 'Conclusão'
+    DOCENCIA = 'Docencia',
+    CONCLUSAO = 'Conclusao'
 }
