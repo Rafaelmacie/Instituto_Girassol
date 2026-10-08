@@ -1,6 +1,7 @@
 import { MatriculaRepository } from './matriculaRepository';
 import { Matricula } from './matriculaModel';
 import { StatusMatricula } from '../../../shared/constants/statusMatricula';
+import certificadoService from '../../certificado/certificadoService';
 
 class MatriculaService {
     private matriculaRepository: MatriculaRepository;
@@ -55,21 +56,23 @@ class MatriculaService {
             throw new Error("Este curso ainda não possui aulas cadastradas.");
         }
 
-        if (matricula.aulasAssistidas < totalAulasDoCurso) {
-            throw new Error(`Reprovado por Frequência. Você assistiu ${matricula.aulasAssistidas} de ${totalAulasDoCurso} aulas.`);
+        const frequenciaRealizada = (matricula.aulasAssistidas / totalAulasDoCurso) * 100;
+        if (frequenciaRealizada <= 70) {
+            throw new Error(`Reprovado por Frequência. Sua frequência foi de ${frequenciaRealizada.toFixed(1)}%, mas a mínima é 70%.`);
         }
 
         // Se passou nas duas validações, atualizamos o status da matrícula para CONCLUIDA
         await this.matriculaRepository.atualizarStatus(idMatricula, StatusMatricula.CONCLUIDO);
 
-        // ToDo: disparar uma chamada para o serviço de Certificado
-        // Ex: const linkCertificado = await certificadoService.gerar(idMatricula);
+        // Gera o certificado
+        const codigoCertificado = await certificadoService.gerar(idMatricula);
 
         return {
             aprovado: true,
             message: "Parabéns! Você foi aprovado e seu certificado já pode ser gerado.",
             notaFinal: matricula.notaFinal,
-            frequencia: `${matricula.aulasAssistidas}/${totalAulasDoCurso}`
+            frequencia: `${frequenciaRealizada.toFixed(1)}%`,
+            codigoCertificado
         };
     }
 }

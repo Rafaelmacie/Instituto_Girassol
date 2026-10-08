@@ -17,6 +17,7 @@ import tentativaRoutes from '../modules/curso/matricula/tentativaAvaliacao/tenta
 import { respostaRoutes } from '../modules/curso/matricula/tentativaAvaliacao/resposta/respostaRoutes';
 import { comentarioRoutes } from '../modules/forum/comentario/comentarioRoutes'; 
 import { respostaRoutes as respostaComentarioRoutes } from '../modules/forum/respostaComentario/respostaComentarioRoutes';
+import certificadoRoutes from '../modules/certificado/certificadoRoutes';
 
 const router = Router();
 const usuarioController = new UsuarioController();
@@ -39,6 +40,7 @@ router.use('/tentativas', tentativaRoutes);
 router.use('/respostas', respostaRoutes);
 router.use('/comentarios', comentarioRoutes);
 router.use('/respostas-comentarios', respostaComentarioRoutes);
+router.use('/certificados', certificadoRoutes);
 
 // Rota teste
 router.get('/', (req: Request, res: Response) => {
