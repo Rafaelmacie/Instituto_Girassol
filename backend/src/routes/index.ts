@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import * as Sentry from '@sentry/node';
 import administradorRoutes from '../modules/usuario/administrador/administradorRoutes';
 import { professorRoutes } from '../modules/usuario/usuarioCertificavel/professor/professorRoutes';
 import alunoRoutes from '../modules/usuario/usuarioCertificavel/aluno/alunoRoutes';
@@ -45,6 +46,20 @@ router.use('/certificados', certificadoRoutes);
 // Rota teste
 router.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API rodando com sucesso!' });
+});
+
+// Rotas de teste do Sentry
+router.get('/debug-sentry', (_req: Request, _res: Response) => {
+  throw new Error('Erro de teste do Sentry - Instituto Girassol!');
+});
+
+router.get('/debug-sentry-capture', (_req: Request, res: Response) => {
+  const eventId = Sentry.captureException(new Error('Erro capturado manualmente no Sentry!'));
+  res.json({
+    status: 'ok',
+    message: 'Evento enviado com sucesso para o Sentry!',
+    eventId,
+  });
 });
 
 router.post('/login', usuarioController.login);
