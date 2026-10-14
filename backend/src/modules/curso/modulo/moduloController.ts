@@ -20,7 +20,7 @@ export class ModuloController {
 
     async getByCurso(req: Request, res: Response) {
         try {
-            const idCurso = parseInt(req.params.idCurso);
+            const idCurso = parseInt(String(req.params.idCurso));
             const modulos = await this.service.listarModulosDoCurso(idCurso);
             res.status(200).json(modulos);
         } catch (error: any) {
@@ -30,7 +30,7 @@ export class ModuloController {
 
     async update(req: Request, res: Response) {
         try {
-            const id = parseInt(req.params.id);
+            const id = parseInt(String(req.params.id));
             const { nome } = req.body;
             await this.service.atualizarModulo(id, nome);
             res.status(200).json({ message: "Módulo atualizado com sucesso" });
@@ -41,7 +41,7 @@ export class ModuloController {
 
     async delete(req: Request, res: Response) {
         try {
-            const id = parseInt(req.params.id);
+            const id = parseInt(String(req.params.id));
             await this.service.excluirModulo(id);
             res.status(200).json({ message: "Módulo excluído com sucesso" });
         } catch (error: any) {

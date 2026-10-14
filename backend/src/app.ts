@@ -1,3 +1,5 @@
+import "./instrument";
+import * as Sentry from "@sentry/node";
 import express from 'express';
 import cors from 'cors';
 import { router } from './routes';
@@ -14,4 +16,6 @@ app.use(express.json());
 // Rotas da aplicação centralizadas
 app.use(router);
 
-export { app };
+Sentry.setupExpressErrorHandler(app);
+
+export { app };

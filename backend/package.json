@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@sentry/node": "^11.7.0",
+    "@sentry/profiling-node": "^11.7.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.9.0",
     "cors": "^2.8.5",

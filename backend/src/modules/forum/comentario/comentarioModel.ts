@@ -1,4 +1,4 @@
-import { RespostaComentario } from '../respostaComentario/respostaComentarioModel';
+import { RespostaComentario } from '../respostaComentario/respostaModel';
 
 export class Comentario {
     constructor(
