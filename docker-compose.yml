@@ -22,11 +22,8 @@ services:
       - "${PORT}:3000"
     depends_on:
       - db
-    # Carregamos primeiro as variáveis gerais (raiz)
-    # Depois as específicas do backend
     env_file:
       - ./.env
-      - ./backend/.env 
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -40,7 +37,6 @@ services:
       - "${FRONTEND_PORT}:5173"
     env_file:
       - ./.env
-      - ./frontend/.env
     volumes:
       - ./frontend:/app
       - /app/node_modules
